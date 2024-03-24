@@ -307,7 +307,6 @@ class Akagi(App):
         self.gm_msg_list = []
         self.mjai_msg_list = []
         self.isLiqi = False
-        self.needOperate = False
 
     def on_mount(self) -> None:
         self.game_log = self.query_one("#game_log")
@@ -366,7 +365,6 @@ class Akagi(App):
             if gm_msg.method == '.lq.ActionPrototype':
                 if 'operation' in gm_msg.data.get('data'):
                     if 'operation_list' in gm_msg.data.get('data').get('operation'):
-                        self.needOperate = True
                         self.action.latest_operation_list = gm_msg.data.get('data').get('operation').get('operation_list')
                 if gm_msg.data.get('name') == 'ActionDiscardTile':
                     self.action.isNewRound = False
@@ -377,7 +375,6 @@ class Akagi(App):
                     self.action.reached = False
             if gm_msg.method == '.lq.FastTest.inputOperation' or gm_msg.method == '.lq.FastTest.inputChiPengGang':
                 if gm_msg.type == MsgType.Req:
-                    self.needOperate = False
                     self.gm_msg_list = []
                     self.mjai_msg_list = []
                     self.isLiqi = False
@@ -458,11 +455,8 @@ class Akagi(App):
                 self.tsumohai = tsumohai
 
                 # 自动打牌
-                if AUTOPLAY and self.needOperate:
+                if AUTOPLAY:
                     self.action.mjai2action(self.mjai_msg_list[-1], self.tehai, self.tsumohai, self.isLiqi)
-        # 出牌验证
-        elif AUTOPLAY and self.needOperate and len(self.mjai_msg_list) > 0:
-            self.action.mjai2action(self.mjai_msg_list[-1], self.tehai, self.tsumohai, self.isLiqi)
         else:
             time.sleep(1)
 
